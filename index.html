@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Split-Flap Display</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    let rows = 1;
+    let cols = 3;
+
+    // Split-flap display array
+    let splitFlaps = [];
+
+    let speed = 0.41;
+    let font;
+    const allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+    function preload() {
+      // Replace with the path to your font file if needed
+      font = loadFont('assets/DelaGothicOne-Regular.ttf');
+    }
+
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      textFont(font);
+
+      // Initialize Split-Flap objects
+      for (let i = 0; i < rows; i++) {
+        splitFlaps[i] = [];
+        for (let j = 0; j < cols; j++) {
+          let startPos = int(random(allowedChars.length));
+          splitFlaps[i][j] = new SplitFlap(
+            width / cols * j,
+            height / rows * i,
+            width / cols,
+            height / rows,
+            speed,
+            startPos
+          );
+        }
+      }
+    }
+
+    function draw() {
+      background(0);
+
+      // Update and display all Split-Flap objects
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          splitFlaps[i][j].update();
+          splitFlaps[i][j].display();
+        }
+      }
+    }
+
+    class SplitFlap {
+      constructor(x, y, w, h, speed, startPos) {
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this.speed = speed;
+        this.ch = allowedChars[startPos]; // Initial character
+        this.targetCh = allowedChars[(startPos + 1) % allowedChars.length]; // Initial target character
+        this.lerpVal = 0.0; // Interpolation value
+        this.pauseStart = millis() + random(1800, 3010); // Random pause start time
+        this.pauseDuration = random(600, 3010); // Random pause duration
+      }
+
+      update() {
+        if (millis() < this.pauseStart) {
+          // If not paused, animate the transition
+          this.lerpVal += this.speed;
+          if (this.lerpVal >= 1.0) {
+            this.lerpVal = 0.0;
+            this.ch = this.targetCh;
+            this.targetCh =
+              allowedChars[
+                (allowedChars.indexOf(this.ch) + 1) % allowedChars.length
+              ];
+          }
+        } else if (millis() - this.pauseStart > this.pauseDuration) {
+          // If the pause is over, set new random timings
+          this.pauseStart = millis() + random(1800, 3010);
+          this.pauseDuration = random(600, 3010);
+        }
+      }
+
+      display() {
+        fill(255);
+        textSize(min(this.w, this.h) / 2);
+        textAlign(CENTER, CENTER);
+        text(this.ch, this.x + this.w / 2, this.y + this.h / 2);
+      }
+    }
+
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+
+      // Reinitialize Split-Flap objects for the new canvas size
+      splitFlaps = [];
+      for (let i = 0; i < rows; i++) {
+        splitFlaps[i] = [];
+        for (let j = 0; j < cols; j++) {
+          let startPos = int(random(allowedChars.length));
+          splitFlaps[i][j] = new SplitFlap(
+            width / cols * j,
+            height / rows * i,
+            width / cols,
+            height / rows,
+            speed,
+            startPos
+          );
+        }
+      }
+    }
+  </script>
+</body>
+</html>
