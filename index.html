@@ -17,89 +17,86 @@
 </head>
 <body>
 <script>
-  let rows = 1, cols = 3, splitFlaps = [];
-  let speed = 0.41, font;
-  const allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  const WAR_PROB = 0.20, WAR_WORD = "WAR";
+let rows=1, cols=4, splitFlaps=[];
+let speed=0.41, font;
+const allowedChars=" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // leading space for padding
+const WAR_PROB=0.20, WORD_PROB=0.30; // 20% WAR, 30% curated words, rest random
+const WORDS=["ACT","LAW","TAX","WAR","VOTE","BAN","UNF","EPA","USA","ICE","SEA","AIR","ASH","OAK","ELM","BEE","ANT","FOX","OWL"];
 
-  function preload(){ font = loadFont('assets/DelaGothicOne-Regular.ttf'); }
+function preload(){ font=loadFont('assets/DelaGothicOne-Regular.ttf'); }
 
-  function setup() {
-    createCanvas(windowWidth, windowHeight);
-    textFont(font);
-    initFlaps();
-    startNextCycle();
+function setup(){
+  createCanvas(windowWidth, windowHeight);
+  textFont(font);
+  initFlaps();
+  startNextCycle();
+}
+
+function draw(){
+  background(0);
+  for(let j=0;j<cols;j++){ splitFlaps[j].update(); splitFlaps[j].display(); }
+  if(splitFlaps.every(f=>f.ready())) startNextCycle();
+}
+
+function startNextCycle(){
+  let word;
+  const r=random();
+  if(r < WAR_PROB) word="WAR";
+  else if(r < WAR_PROB + WORD_PROB) word=random(WORDS);
+  else word=randomWord(cols);
+
+  word = word.toUpperCase().padEnd(cols, " ").slice(0, cols);
+  for(let j=0;j<cols;j++) splitFlaps[j].setTarget(word[j]);
+}
+
+function randomWord(n){
+  let s="";
+  for(let i=0;i<n;i++) s+=allowedChars[int(random(allowedChars.length))];
+  return s;
+}
+function nextChar(ch){
+  return allowedChars[(allowedChars.indexOf(ch)+1)%allowedChars.length];
+}
+
+class SplitFlap{
+  constructor(x,y,w,h,speed,startPos){
+    this.x=x; this.y=y; this.w=w; this.h=h; this.speed=speed;
+    this.ch=allowedChars[startPos]; this.targetCh=this.ch;
+    this.lerpVal=0; this.flipping=false;
+    this.pauseUntil=millis()+random(600,1800);
   }
-
-  function draw() {
-    background(0);
-    for (let j = 0; j < cols; j++) { splitFlaps[j].update(); splitFlaps[j].display(); }
-    if (splitFlaps.every(f => f.ready())) startNextCycle();
-  }
-
-  function startNextCycle(){
-    const word = (random() < WAR_PROB) ? WAR_WORD : randomWord(cols);
-    for (let j = 0; j < cols; j++) splitFlaps[j].setTarget(word[j]);
-  }
-
-  function randomWord(n){
-    let s = "";
-    for (let i = 0; i < n; i++) s += allowedChars[int(random(allowedChars.length))];
-    return s;
-  }
-
-  function nextChar(ch){
-    return allowedChars[(allowedChars.indexOf(ch) + 1) % allowedChars.length];
-  }
-
-  class SplitFlap {
-    constructor(x,y,w,h,speed,startPos){
-      this.x=x; this.y=y; this.w=w; this.h=h; this.speed=speed;
-      this.ch = allowedChars[startPos];
-      this.targetCh = this.ch;
-      this.lerpVal = 0;
-      this.flipping = false;
-      this.pauseUntil = millis() + random(600, 1800);
-    }
-    setTarget(t){ this.targetCh = t; this.flipping = true; this.lerpVal = 0; }
-    ready(){ return !this.flipping && millis() >= this.pauseUntil; }
-    update(){
-      if (!this.flipping) return;
-      this.lerpVal += this.speed;
-      if (this.lerpVal >= 1){
-        this.lerpVal = 0;
-        this.ch = nextChar(this.ch);
-        if (this.ch === this.targetCh){
-          this.flipping = false;
-          this.pauseUntil = millis() + random(600, 3010);
-        }
+  setTarget(t){ this.targetCh=t; this.flipping=true; this.lerpVal=0; }
+  ready(){ return !this.flipping && millis()>=this.pauseUntil; }
+  update(){
+    if(!this.flipping) return;
+    this.lerpVal+=this.speed;
+    if(this.lerpVal>=1){
+      this.lerpVal=0; this.ch=nextChar(this.ch);
+      if(this.ch===this.targetCh){
+        this.flipping=false;
+        this.pauseUntil=millis()+random(600,3010);
       }
     }
-    display(){
-  const isWAR = (this.ch === "W" || this.ch === "A" || this.ch === "R");
-  fill(isWAR ? color(255, 0, 0) : 255);
-
-  textSize(min(this.w, this.h)/2);
-  textAlign(CENTER, CENTER);
-  text(this.ch, this.x + this.w/2, this.y + this.h/2);
+  }
+  display(){
+    const red = (this.ch==="W"||this.ch==="A"||this.ch==="R");
+    fill(red ? color(255,0,0) : 255);
+    textSize(min(this.w,this.h)/2);
+    textAlign(CENTER,CENTER);
+    text(this.ch, this.x+this.w/2, this.y+this.h/2);
+  }
 }
-  }
 
-  function initFlaps(){
-    splitFlaps = [];
-    for (let j = 0; j < cols; j++){
-      let startPos = int(random(allowedChars.length));
-      splitFlaps[j] = new SplitFlap(width/cols*j, 0, width/cols, height, speed, startPos);
-    }
+function initFlaps(){
+  splitFlaps=[];
+  for(let j=0;j<cols;j++){
+    let startPos=int(random(allowedChars.length));
+    splitFlaps[j]=new SplitFlap(width/cols*j,0,width/cols,height,speed,startPos);
   }
+}
 
-  function mousePressed(){ fullscreen(!fullscreen()); }
-
-  function windowResized(){
-    resizeCanvas(windowWidth, windowHeight);
-    initFlaps();
-    startNextCycle();
-  }
+function mousePressed(){ fullscreen(!fullscreen()); }
+function windowResized(){ resizeCanvas(windowWidth, windowHeight); initFlaps(); startNextCycle(); }
 </script>
 </body>
 </html>
