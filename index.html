@@ -19,15 +19,20 @@
 <script>
 let rows=1, cols=3, splitFlaps=[];
 let speed=0.41, font;
-const allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&"; // leading space for padding
-const WAR_PROB=0.05, WORD_PROB=0.40; // 20% WAR, 30% curated words, rest random
+
+const allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&";
+const WAR_PROB=0.05, WORD_PROB=0.40;
+
 const WORDS=["ACT","LAW","TAX","WAR","VOTE","BAN","UNF","EPA","USA","ICE","SEA","AIR","ASH","OAK","ELM","BEE","ANT","FOX","OWL","NBC","DNA","FCK","DNS","CMD","VCA","VCV","RCA","NBA","WTC","WTF","OMG","PAN","TAN","COS","WAV","ONU","OPN","KLF","JFK","DEA","FBI","IDM","DIE","UFO","LIP","SHT","BOM","DAD","MOM","BRO","SIS","LOL","IDK","MAR","ARM","3XL","808","404","VIS","LOF","LOV","C74","Q&A","TNT","WAX","TNP","LYX","LUX","CBM","JBM","ARV","ART","CBD","TNX"];
+
+let wordBag = []; // shuffled pool, no repeats until empty
 
 function preload(){ font=loadFont('assets/DelaGothicOne-Regular.ttf'); }
 
 function setup(){
   createCanvas(windowWidth, windowHeight);
   textFont(font);
+  refillWordBag();
   initFlaps();
   startNextCycle();
 }
@@ -41,12 +46,33 @@ function draw(){
 function startNextCycle(){
   let word;
   const r=random();
-  if(r < WAR_PROB) word="WAR";
-  else if(r < WAR_PROB + WORD_PROB) word=random(WORDS);
-  else word=randomWord(cols);
+
+  if(r < WAR_PROB){
+    word="WAR";
+  } else if(r < WAR_PROB + WORD_PROB){
+    word = drawFromWordBag(); // no repeats until all used
+  } else {
+    word = randomWord(cols);
+  }
 
   word = word.toUpperCase().padEnd(cols, " ").slice(0, cols);
   for(let j=0;j<cols;j++) splitFlaps[j].setTarget(word[j]);
+}
+
+function drawFromWordBag(){
+  if(wordBag.length === 0) refillWordBag();
+  return wordBag.pop();
+}
+
+function refillWordBag(){
+  wordBag = WORDS.slice();
+  // Fisher-Yates shuffle
+  for(let i=wordBag.length-1;i>0;i--){
+    const j = int(random(i+1));
+    const tmp = wordBag[i];
+    wordBag[i] = wordBag[j];
+    wordBag[j] = tmp;
+  }
 }
 
 function randomWord(n){
@@ -54,6 +80,7 @@ function randomWord(n){
   for(let i=0;i<n;i++) s+=allowedChars[int(random(allowedChars.length))];
   return s;
 }
+
 function nextChar(ch){
   return allowedChars[(allowedChars.indexOf(ch)+1)%allowedChars.length];
 }
