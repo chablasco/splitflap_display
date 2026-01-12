@@ -76,11 +76,13 @@
       }
     }
     display(){
-      fill(255);
-      textSize(min(this.w, this.h)/2);
-      textAlign(CENTER, CENTER);
-      text(this.ch, this.x + this.w/2, this.y + this.h/2);
-    }
+  const isWAR = (this.ch === "W" || this.ch === "A" || this.ch === "R");
+  fill(isWAR ? color(255, 0, 0) : 255);
+
+  textSize(min(this.w, this.h)/2);
+  textAlign(CENTER, CENTER);
+  text(this.ch, this.x + this.w/2, this.y + this.h/2);
+}
   }
 
   function initFlaps(){
