@@ -17,9 +17,10 @@ let speed=0.41, font;
 const allowedChars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789&";
 const WAR_PROB=0.05, WORD_PROB=0.20;
 
-const WORDS=["ACT","LAW","TAX","WAR","VOTE","BAN","UNF","EPA","USA","ICE","SEA","AIR","ASH","OAK","ELM","BEE","ANT","FOX","OWL","NBC","DNA","FCK","DNS","CMD","VCA","VCV","RCA","NBA","WTC","WTF","OMG","PAN","TAN","COS","WAV","ONU","OPN","KLF","JFK","DEA","FBI","IDM","DIE","UFO","LIP","SHT","BOM","DAD","MAN","MEN","MOM","BRO","SIS","LOL","IDK","MAR","ARM","3XL","808","404","VIS","LOF","LOV","C74","Q&A","TNT","WAX","TNP","LYX","LUX","CBM","JBM","ARV","ART","CBD","TNX","ZOO","TNP","DPM","OWN","DAY","LAY","SOV","VOX","VOZ","MAP","42U","KKK","TLC","AGI","RUN","PEN","BOX","TRY","WIN","KEY","CAR","SKY","CAT","DOG","BOY","BIG"];
+const WORDS=["ACT","LAW","TAX","WAR","VOTE","BAN","UNF","EPA","USA","ICE","SEA","AIR","ASH","OAK","ELM","BEE","ANT","FOX","OWL","NBC","DNA","FCK","DNS","CMD","VCA","VCV","RCA","NBA","WTC","WTF","OMG","PAN","TAN","COS","WAV","ONU","OPN","KLF","JFK","DEA","FBI","IDM","DIE","UFO","LIP","SHT","BOM","DAD","MAN","MEN","MOM","BRO","SIS","LOL","IDK","MAR","ARM","3XL","808","404","VIS","LOF","LOV","C74","Q&A","TNT","WAX","TNP","LYX","LUX","CBM","JBM","ARV","ART","CBD","TNX","ZOO","TNP","DPM","OWN","DAY","LAY","SOV","VOX","VOZ","MAP","42U","KKK","TLC","AGI","RUN","PEN","BOX","TRY","WIN","KEY","CAR","SKY","CAT","DOG","BOY","BIG","AXE"];
 
 let wordBag = [];
+const Y_OFFSET = -10; // move grid a few pixels up (tweak this)
 
 function preload(){ font=loadFont('assets/DelaGothicOne-Regular.ttf'); }
 
@@ -110,12 +111,12 @@ class SplitFlap{
 function initFlaps(){
   splitFlaps=[];
 
-  // Keep the splitflaps centered in the canvas (center/center)
-  const flapSize = min(width/cols, height/rows);   // square cells
+  const flapSize = min(width/cols, height/rows);
   const gridW = flapSize * cols;
   const gridH = flapSize * rows;
+
   const x0 = (width - gridW) / 2;
-  const y0 = (height - gridH) / 2;
+  const y0 = (height - gridH) / 2 + Y_OFFSET;
 
   for(let j=0;j<cols;j++){
     let startPos=int(random(allowedChars.length));
